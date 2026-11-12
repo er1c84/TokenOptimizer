@@ -6,6 +6,7 @@ from pathlib import Path
 
 from src.config import Settings
 from src.core.context import Omission, ProjectFile, ScanResult
+from src.core.scanner.gitignore import load_git_ignores
 
 GENERATED_DIRECTORIES = frozenset({
     "node_modules", "target", "dist", "build", "__pycache__", "venv",
@@ -41,6 +42,7 @@ def scan_project(root: Path, settings: Settings) -> ScanResult:
     root = root.expanduser().resolve(strict=True)
     if not root.is_dir():
         raise NotADirectoryError(f"Not a project directory: {root}")
+    git_ignores = load_git_ignores(root)
     files: list[ProjectFile] = []
     skipped: list[Omission] = []
     bytes_read = 0
@@ -57,6 +59,8 @@ def scan_project(root: Path, settings: Settings) -> ScanResult:
             path = base / name
             relative = path.relative_to(root).as_posix()
             reason = _skip_reason(path, relative, settings)
+            if reason is None and git_ignores.ignores(relative, directory=True):
+                reason = "ignored by Git"
             if reason:
                 skipped.append(Omission(relative + "/", reason))
             else:
@@ -67,6 +71,8 @@ def scan_project(root: Path, settings: Settings) -> ScanResult:
             path = base / name
             relative = path.relative_to(root).as_posix()
             reason = _skip_reason(path, relative, settings)
+            if reason is None and git_ignores.ignores(relative):
+                reason = "ignored by Git"
             if reason:
                 skipped.append(Omission(relative, reason))
                 continue
@@ -101,4 +107,5 @@ def scan_project(root: Path, settings: Settings) -> ScanResult:
                 continue
             files.append(ProjectFile(relative, text))
 
-    return ScanResult(tuple(files), tuple(skipped))
+    warnings = (git_ignores.warning,) if git_ignores.warning else ()
+    return ScanResult(tuple(files), tuple(skipped), warnings)

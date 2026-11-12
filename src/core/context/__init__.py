@@ -20,6 +20,7 @@ class Omission:
 class ScanResult:
     files: tuple[ProjectFile, ...]
     skipped: tuple[Omission, ...]
+    warnings: tuple[str, ...] = ()
 
 
 def render_context(files: list[ProjectFile] | tuple[ProjectFile, ...]) -> str:

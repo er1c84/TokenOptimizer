@@ -16,6 +16,7 @@ class ContextResult:
     estimated_tokens_before: int
     estimated_tokens_after: int
     token_budget: int | None
+    warnings: tuple[str, ...] = ()
 
     @property
     def estimated_savings_percent(self) -> float:
@@ -61,4 +62,5 @@ def select_context(scan: ScanResult, budget: int | None) -> ContextResult:
         estimated_tokens_before=estimate_tokens(render_context(ordered)),
         estimated_tokens_after=estimate_tokens(context),
         token_budget=budget,
+        warnings=scan.warnings,
     )

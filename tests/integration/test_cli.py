@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -58,6 +59,35 @@ class CliTests(unittest.TestCase):
                 run = self.run_cli(*arguments)
                 self.assertEqual(run.returncode, 2)
                 self.assertNotIn("Traceback", run.stderr)
+
+    def test_non_repository_reports_fallback_in_json_and_text(self):
+        (self.root / ".gitignore").write_text("notes.txt\n", encoding="utf-8")
+        run = self.run_cli("context", ".", "--raw", "--format", "json")
+        self.assertEqual(run.returncode, 0, run.stderr)
+        result = json.loads(run.stdout)
+        self.assertEqual(result["files_included"], ["README.md", "notes.txt"])
+        self.assertEqual(len(result["warnings"]), 1)
+        text = self.run_cli("context", ".", "--raw")
+        self.assertIn("Warning:", text.stderr)
+        self.assertNotIn("Warning:", text.stdout)
+
+    @unittest.skipUnless(shutil.which("git"), "Git is not installed")
+    def test_git_ignores_apply_in_raw_and_budget_modes_without_writes(self):
+        subprocess.run(["git", "init", "--quiet", str(self.root)], capture_output=True, check=True)
+        (self.root / ".gitignore").write_text("notes.txt\n", encoding="utf-8")
+        before = {path.relative_to(self.root): path.read_bytes() for path in self.root.rglob("*") if path.is_file()}
+        for mode in ((), ("--raw",)):
+            with self.subTest(mode=mode):
+                run = self.run_cli("context", ".", "--budget", "30", "--format", "json", *mode)
+                self.assertEqual(run.returncode, 0, run.stderr)
+                result = json.loads(run.stdout)
+                self.assertEqual(result["files_included"], ["README.md"])
+                self.assertEqual(result["files_omitted"], [])
+                reasons = {item["path"]: item["reason"] for item in result["files_skipped"]}
+                self.assertEqual(reasons["notes.txt"], "ignored by Git")
+                self.assertEqual(result["warnings"], [])
+        after = {path.relative_to(self.root): path.read_bytes() for path in self.root.rglob("*") if path.is_file()}
+        self.assertEqual(after, before)
 
 
 if __name__ == "__main__":

@@ -39,6 +39,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.format == "json":
         print(json.dumps(result.to_dict(), indent=2, ensure_ascii=True))
     else:
+        for warning in result.warnings:
+            print(f"Warning: {warning}", file=sys.stderr)
         sys.stdout.write(result.context)
         eligible = len(result.files_included) + len(result.files_omitted)
         print(
