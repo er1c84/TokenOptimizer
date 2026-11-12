@@ -1,0 +1,22 @@
+# Operating system metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local environment files; templates may be committed
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Editor temporary files
+*~
+*.swp
+*.swo
+
+# Python prototype artifacts
+__pycache__/
+*.py[cod]
+.venv/
+
+# Keep dependency lockfiles and shared editor configuration eligible for tracking.
