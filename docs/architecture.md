@@ -17,7 +17,7 @@ remain open.
 | `src/config/` | Settings and defaults. No config-file loading yet. |
 | `src/integrations/codex/` | Placeholder for a Codex adapter. |
 | `src/integrations/claude/` | Placeholder for a Claude Code adapter. |
-| `src/integrations/mcp/` | Placeholder for an MCP server. |
+| `src/integrations/mcp/` | Context builder and optional read-only MCP stdio server. |
 | `src/integrations/api/` | Placeholder for future API adapters. |
 | `tests/unit/` | Scanner, selection, and token estimate checks. |
 | `tests/integration/` | CLI and read-only behavior checks. |
@@ -67,13 +67,39 @@ command entry point. Setuptools maps `src/` to the installed `tokenoptimizer`
 package. Relative imports let the same code run from a checkout or an installed
 wheel without moving the source folders.
 
-Setuptools is a build dependency only. There are no third-party runtime
-dependencies. The wheel includes the MIT license and active Python modules;
+Setuptools is a build dependency only. The base CLI has no third-party runtime
+dependencies; the optional `[mcp]` extra installs the official MCP Python SDK v2
+and its dependencies. The wheel includes the MIT license and active Python modules;
 tests and placeholder directories are not installed.
 
 `tests/check_install.py` installs a wheel in a fresh temporary environment and
 checks the command, module entry point, scanning from another folder, and
 uninstalling. Installation does not configure an assistant integration.
+
+## MCP server
+
+`integrations/mcp/context_tool.py` connects the scanner and selector through
+`build_context`. `integrations/mcp/server.py` wraps that function in one tool,
+`get_project_context(task, budget=4000)`, using the optional MCP SDK.
+
+`create_server(project_root)` resolves and fixes the project directory when the
+server is created. Tool calls cannot supply a different path. Scanner exclusions
+and read limits still apply. The response contains selected context and compact
+counts rather than the complete ranking report. A typed response gives clients
+an output schema. Read-only annotations describe the behavior to clients; they
+do not replace client permissions.
+
+The installed `tokenoptimizer-mcp` command accepts `--project` and runs over stdio.
+The SDK is imported only when a server is created, so base installation and help
+remain usable without MCP dependencies. No assistant settings are changed.
+
+MCP tests cover discovery, calls, invalid inputs, ignored files, unchanged project
+contents, and an installed subprocess with modern and legacy clients. They skip
+when the optional SDK is absent. Run them after installing `.[mcp]`.
+
+Windows SDK dependencies require standard Windows Python. The MSYS2 interpreter
+used for the CLI cannot install those wheels. A private, ignored `.mcp-runtime/`
+environment is used for local MCP verification; it is not included in packages.
 
 ## Git ignore rules
 

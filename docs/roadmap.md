@@ -54,6 +54,17 @@ Complete for the keyword-matching version.
 This is a local heuristic. Task quality and actual token savings still need
 evaluation on real coding tasks before automatic Codex integration.
 
+## Milestone 5: Local MCP server
+
+Implemented on the integration branch.
+
+- Reuse the project context builder through `get_project_context`.
+- Fix a project root at startup and return compact read-only results.
+- Add optional SDK dependencies and an installed stdio server command.
+- Test discovery, calls, validation, ignored files, and installed subprocesses.
+
+Connecting the server to Codex and measuring end-to-end usage are separate steps.
+
 ## Later improvements
 
 Take these one at a time; the order can change:
@@ -62,7 +73,7 @@ Take these one at a time; the order can change:
 - Add model-specific token counting.
 - Improve task relevance using results from real coding tasks.
 - Cache repeated work locally.
-- Add native Codex and Claude Code adapters and an MCP server.
+- Connect the MCP server to Codex; add native assistant adapters as needed.
 - Add automatic workflows, then conversation and prompt optimization.
 
 The current Python version has pip/setuptools packaging. The production language,
