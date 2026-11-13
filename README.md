@@ -1,146 +1,79 @@
 # TokenOptimizer
-A lightweight, local tool designed to reduce AI token usage across coding assistants and AI-powered applications.
 
-## Status
+TokenOptimizer is a local command-line tool that selects project files for AI
+coding assistants. It prepares a smaller bundle of file contents using an
+estimated token budget and optional task keywords.
 
-The first version is a manual tool for preparing project context. It reads local
-files, selects whole files within an estimated token budget, and reports what
-was included or skipped. It leaves the original files alone.
+## How it works
 
-Requires Python 3.12+. There are no third-party runtime packages. Git is needed
-to apply ignore rules.
+1. Scans a project folder for UTF-8 text files.
+2. Applies Git ignore rules and exclusions, skipping hidden files, binary files, and common dependency/build folders.
+3. Prioritizes files using keywords from your task. Without a task, it puts root guidance files first, followed by `src/` and other files.
+4. Includes complete files that fit the budget and reports what was included, omitted, or skipped.
+
+Matching uses words in file paths and contents. It ignores case and recognizes
+words in `snake_case` and `camelCase` names. If nothing matches, it uses the
+default file order and reports a warning.
+
+Files remain unchanged. You run the tool and pass the selected contents to your
+assistant. Token counts are estimates based on UTF-8 size. The budget covers the
+selected context, not the extra JSON report. Reads are limited to 128 KiB per file
+and 8 MiB per scan.
 
 ## Install
 
-From the repository folder:
+Requires Python 3.12 or newer. Git is needed to apply ignore rules.
 
-```console
+```powershell
+git clone https://github.com/er1c84/TokenOptimizer.git
+cd TokenOptimizer
 python -m pip install .
 ```
 
-If Python reports that pip is missing, run `python -m ensurepip --upgrade` first.
-Installing from source may download setuptools to build the package; running the
-tool is offline.
+If you already have the repository, run the install command from that folder.
+If pip is missing, run `python -m ensurepip --upgrade` first. If you use a virtual
+environment, activate it before installing and running the tool.
 
-After installation, run this from any project folder:
+Installing from source may download setuptools to build the package. The tool
+runs locally and has no third-party runtime packages.
 
-```console
-tokenoptimizer context . --budget 4000
+## Use
+
+From the project folder you want to scan:
+
+```powershell
+tokenoptimizer context . --task "fix the login bug" --budget 4000
 ```
 
-If the short command is not on your PATH, use
-`python -m tokenoptimizer context . --budget 4000` with the same Python used to
-install it.
+The `.` means the current folder. To scan a different project:
 
-Check the installed version with `tokenoptimizer --version`. To install local
-updates, run `python -m pip install --upgrade .` from the repository folder.
-To remove it, run `python -m pip uninstall TokenOptimizer`.
-
-## Usage
-
-Try the sample from the repository folder, without installing:
-
-```console
-python tokenoptimizer.py context examples/sample_project --budget 100
+```powershell
+tokenoptimizer context "C:/Projects/MyApp" --budget 4000 --format json
 ```
 
-The sample includes the README and source file and leaves out the notes.
+Text output contains the selected files and a brief summary. JSON also includes
+file lists, skip reasons, token estimates, and task-ranking details when a task
+is provided.
 
-Once installed, point it at another project:
+If your terminal cannot find `tokenoptimizer`, use the same Python environment
+you installed it with:
 
-```console
-tokenoptimizer context "C:/Projects/MyApp" --budget 4000
+```powershell
+python -m tokenoptimizer context . --task "fix the login bug" --budget 4000
 ```
 
-Options:
+## Options
 
-- `--task "fix the login bug"`: prioritize files whose paths or contents match task keywords.
-- `--format json`: include file lists, skip reasons, and size estimates.
-- `--exclude "*.log"`: exclude a filename or relative-path pattern. Repeat for more patterns; use `/` for path separators. Matching is case-sensitive.
-- `--raw`: include all eligible files without applying the token budget.
+| Option | What it does |
+| --- | --- |
+| `--budget 4000` | Sets the estimated context budget. Default: 2000. |
+| `--task "fix the login bug"` | Prioritizes files that match task keywords. |
+| `--format json` | Prints context and selection details as JSON. Default: text. |
+| `--exclude "*.log"` | Excludes a filename or relative-path pattern. Repeat for more patterns; use `/` for paths. Matching is case-sensitive. |
+| `--raw` | Includes all eligible files without a budget. Ignore rules, exclusions, and read limits still apply. |
 
-Text mode prints context to standard output and the summary to standard error.
-In JSON mode, the budget applies to the `context` field, not the entire report.
-Nothing is sent to an assistant automatically.
-
-## Task-based selection
-
-```console
-tokenoptimizer context . --task "fix gitignore scanning" --budget 4000 --format json
-```
-
-Task matching is local and uses no AI service. Matches are case-insensitive whole
-words, including words in `snake_case` and `camelCase` identifiers. Common request
-words such as "fix" and "the" are ignored. Each distinct keyword earns four
-points when found in a path and one when found in content; repetition adds no
-points. Higher scores come first, with the usual file order breaking ties.
-
-JSON adds `task_selection` with the keywords, ordered scores, and path/content
-matches for every eligible file. This report is outside the context budget.
-Unmatched files can still fill remaining space. If the task has no searchable
-keywords or no files match, the default order is used with a warning.
-
-Without `--task`, behavior and JSON fields stay the same. `--raw --task` ranks
-all eligible files without applying a budget. Keyword matches are relevance hints;
-the tool does not understand dependencies or guarantee that every necessary file
-is selected.
-
-## Git ignore rules
-
-In a Git project, the scanner uses Git's ignore rules, including nested
-`.gitignore` files, `!` exceptions, `.git/info/exclude`, and configured global
-exclusions. Tracked files stay eligible, but scanner defaults and `--exclude`
-still take precedence.
-
-For example, if `.gitignore` contains `logs/`, an untracked `logs/` folder is
-listed in the JSON `files_skipped` report with the reason `ignored by Git`:
-
-```console
-tokenoptimizer context "C:/Projects/MyApp" --format json
-```
-
-Outside a Git repository, or if Git is missing or fails, the scanner uses its
-normal filters. Text mode reports a warning on standard error; JSON mode includes
-it in `warnings`. Ignore rules are not applied in that case. Scan nested
-repositories and submodules separately to use their own ignore rules.
-
-## Current limits
-
-- Token counts are estimates: `ceil(UTF-8 bytes / 4)`.
-- Without a task, root README and assistant instruction files come first, then `src/`, then other paths. Task keywords change priority when `--task` is supplied.
-- Files are included whole or omitted. A small budget can produce empty context.
-- Hidden paths, common dependency/build folders, generated lockfiles, OS metadata, credential-file extensions, links, binary/non-UTF-8 files, and large files are skipped. See [scanner defaults](src/core/scanner/__init__.py) for the lists. This is not secret detection.
-- Reads are capped at 128 KiB per file and 8 MiB per scan.
-- `--raw` still uses Git ignore rules, scanner exclusions, and read limits.
-
-## Tests
-
-```console
-python -m unittest discover -s tests -v
-```
-
-Tested on Windows with Python 3.12. Other platforms still need testing.
-
-To build and check an installable wheel:
-
-```console
-python -m pip wheel --no-deps --wheel-dir dist .
-python tests/check_install.py dist/tokenoptimizer-0.1.0a2-py3-none-any.whl
-```
-
-The install check creates a temporary environment, installs the wheel without
-network access, runs it outside the checkout, and checks uninstalling it.
-
-## Layout
-
-- `src/core/`: scanning, context selection, token estimates, and future caching.
-- `src/cli/`: command-line arguments and output.
-- `src/config/`: settings and defaults.
-- `src/integrations/`: placeholders for Codex, Claude Code, MCP, and API adapters.
-- `tests/`: unit and integration tests.
-- `examples/`: sample project.
-- `benchmarks/`: reserved for performance tests.
-- `docs/`: [architecture](docs/architecture.md), [requirements](docs/requirements.md), [roadmap](docs/roadmap.md), and [RTK notes](docs/rtk-design-notes.md).
+Use `tokenoptimizer context --help` for command help and `tokenoptimizer --version`
+to check the installed version.
 
 ## License
 
