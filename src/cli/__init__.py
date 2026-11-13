@@ -25,13 +25,14 @@ def main(argv: list[str] | None = None) -> int:
     context = commands.add_parser("context", help="select whole UTF-8 files within an estimated budget")
     context.add_argument("path", nargs="?", type=Path, default=Path("."))
     context.add_argument("--budget", type=_positive_integer, default=2000, help="estimated token budget (default: 2000)")
+    context.add_argument("--task", help="prioritize files using local task-keyword matches")
     context.add_argument("--exclude", action="append", default=[], help="exclude a relative path or filename glob; repeatable")
     context.add_argument("--raw", action="store_true", help="include all eligible files without applying a budget")
     context.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args(argv)
     settings = Settings(token_budget=args.budget, exclude=tuple(args.exclude))
     try:
-        result = select_context(scan_project(args.path, settings), None if args.raw else settings.token_budget)
+        result = select_context(scan_project(args.path, settings), None if args.raw else settings.token_budget, task=args.task)
     except (OSError, ValueError) as error:
         parser.error(str(error))
 

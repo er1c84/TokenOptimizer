@@ -35,12 +35,30 @@ Empty directories contain `.gitkeep` so Git can track them.
 4. The selector orders files and includes each whole file that fits the budget.
 5. The CLI prints the context and report.
 
-Root `README.md`, `AGENTS.md`, and `CLAUDE.md` come first, followed by `src/`
+Without a task, root `README.md`, `AGENTS.md`, and `CLAUDE.md` come first, followed by `src/`
 files, then other paths. Each group is sorted by path. A file that does not fit
 is skipped; smaller files later in the list can still be included.
 
 Core modules do not import the CLI or assistant integrations. Future adapters
 should call the same core functions.
+
+## Task ranking
+
+`core/context/ranking.py` extracts distinct task keywords and matches whole words
+in eligible file paths and contents. Matching ignores case, separates snake-case
+and camel-case identifiers, and removes common request words. Each matching path
+keyword scores four points; each content keyword scores one. Repeated occurrences
+do not increase the score. This is a local keyword heuristic, not semantic search.
+
+The selector sorts by descending score, then the existing default order. It still
+includes only whole files that fit. Unmatched files remain eligible. Scanner
+exclusions and read limits apply before ranking. No keywords or no matches means
+the original order is used and a warning is returned.
+
+With `--task`, JSON includes `task_selection`: the task, keywords, all candidate
+scores and matching terms, and any fallback reason. Without a task, the JSON
+shape is unchanged. Ranking details are outside the context budget. Raw mode
+uses the same ranking but includes all eligible files.
 
 ## Installation
 

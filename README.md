@@ -54,6 +54,7 @@ tokenoptimizer context "C:/Projects/MyApp" --budget 4000
 
 Options:
 
+- `--task "fix the login bug"`: prioritize files whose paths or contents match task keywords.
 - `--format json`: include file lists, skip reasons, and size estimates.
 - `--exclude "*.log"`: exclude a filename or relative-path pattern. Repeat for more patterns; use `/` for path separators. Matching is case-sensitive.
 - `--raw`: include all eligible files without applying the token budget.
@@ -61,6 +62,28 @@ Options:
 Text mode prints context to standard output and the summary to standard error.
 In JSON mode, the budget applies to the `context` field, not the entire report.
 Nothing is sent to an assistant automatically.
+
+## Task-based selection
+
+```console
+tokenoptimizer context . --task "fix gitignore scanning" --budget 4000 --format json
+```
+
+Task matching is local and uses no AI service. Matches are case-insensitive whole
+words, including words in `snake_case` and `camelCase` identifiers. Common request
+words such as "fix" and "the" are ignored. Each distinct keyword earns four
+points when found in a path and one when found in content; repetition adds no
+points. Higher scores come first, with the usual file order breaking ties.
+
+JSON adds `task_selection` with the keywords, ordered scores, and path/content
+matches for every eligible file. This report is outside the context budget.
+Unmatched files can still fill remaining space. If the task has no searchable
+keywords or no files match, the default order is used with a warning.
+
+Without `--task`, behavior and JSON fields stay the same. `--raw --task` ranks
+all eligible files without applying a budget. Keyword matches are relevance hints;
+the tool does not understand dependencies or guarantee that every necessary file
+is selected.
 
 ## Git ignore rules
 
@@ -84,7 +107,7 @@ repositories and submodules separately to use their own ignore rules.
 ## Current limits
 
 - Token counts are estimates: `ceil(UTF-8 bytes / 4)`.
-- Root README and assistant instruction files come first, then `src/`, then other paths. Selection does not account for the task yet.
+- Without a task, root README and assistant instruction files come first, then `src/`, then other paths. Task keywords change priority when `--task` is supplied.
 - Files are included whole or omitted. A small budget can produce empty context.
 - Hidden paths, common dependency/build folders, generated lockfiles, OS metadata, credential-file extensions, links, binary/non-UTF-8 files, and large files are skipped. See [scanner defaults](src/core/scanner/__init__.py) for the lists. This is not secret detection.
 - Reads are capped at 128 KiB per file and 8 MiB per scan.
@@ -102,7 +125,7 @@ To build and check an installable wheel:
 
 ```console
 python -m pip wheel --no-deps --wheel-dir dist .
-python tests/check_install.py dist/tokenoptimizer-0.1.0a1-py3-none-any.whl
+python tests/check_install.py dist/tokenoptimizer-0.1.0a2-py3-none-any.whl
 ```
 
 The install check creates a temporary environment, installs the wheel without

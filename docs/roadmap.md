@@ -41,13 +41,26 @@ Complete for the current Python version.
 This uses setuptools for packaging and adds no runtime dependencies. It does not
 install assistant hooks or enable automatic optimization.
 
+## Milestone 4: Task-based file selection
+
+Complete for the keyword-matching version.
+
+- Add `--task` to prioritize path and content keyword matches.
+- Explain ranking through scores and matching terms in JSON.
+- Preserve whole files, budget limits, scanner exclusions, and the no-task workflow.
+- Fall back to the default order when there are no useful matches.
+- Cover selection behavior and the installed command with tests.
+
+This is a local heuristic. Task quality and actual token savings still need
+evaluation on real coding tasks before automatic Codex integration.
+
 ## Later improvements
 
 Take these one at a time; the order can change:
 
 - Save common settings in a local configuration file.
 - Add model-specific token counting.
-- Select files based on the task.
+- Improve task relevance using results from real coding tasks.
 - Cache repeated work locally.
 - Add native Codex and Claude Code adapters and an MCP server.
 - Add automatic workflows, then conversation and prompt optimization.

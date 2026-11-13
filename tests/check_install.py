@@ -1,6 +1,6 @@
 """Check a wheel in a fresh environment outside the checkout.
 
-Usage: python tests/check_install.py dist/tokenoptimizer-0.1.0a1-py3-none-any.whl
+Usage: python tests/check_install.py dist/tokenoptimizer-0.1.0a2-py3-none-any.whl
 """
 
 import argparse
@@ -31,6 +31,7 @@ def check(wheel):
         assert not metadata.get_all("Requires-Dist"), "Unexpected runtime dependencies"
         assert any(name.endswith(".dist-info/licenses/LICENSE") for name in names), "Missing license"
         assert "tokenoptimizer/core/scanner/gitignore.py" in names, "Missing scanner module"
+        assert "tokenoptimizer/core/context/ranking.py" in names, "Missing ranking module"
         assert not any(name.startswith(("src/", "tests/")) for name in names), "Checkout files included in wheel"
 
     with tempfile.TemporaryDirectory(prefix="tokenoptimizer-install-") as directory:
@@ -58,6 +59,15 @@ def check(wheel):
         assert result["files_omitted"][0]["path"] == "notes.txt"
         assert result["estimated_tokens_after"] <= 30
         assert result == json.loads(run([python, "-I", "-m", "tokenoptimizer", *arguments], project))
+        assert before == {path.name: path.read_bytes() for path in project.iterdir()}
+        (project / "login.py").write_text("def login(name): return name.strip()\n", encoding="utf-8")
+        before = {path.name: path.read_bytes() for path in project.iterdir()}
+        task_arguments = [*arguments, "--task", "fix the login bug"]
+        result = json.loads(run([command, *task_arguments], project))
+        assert result["files_included"][0] == "login.py"
+        assert result["task_selection"]["keywords"] == ["login"]
+        assert result["task_selection"]["ranking"][0]["score"] == 5
+        assert result == json.loads(run([python, "-I", "-m", "tokenoptimizer", *task_arguments], project))
         assert before == {path.name: path.read_bytes() for path in project.iterdir()}
         run([python, "-m", "pip", "uninstall", "--yes", "TokenOptimizer"], root)
         assert not command.exists(), "Uninstall left the command behind"

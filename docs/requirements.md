@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | R1 | Hybrid optimization: automatic and manual workflows. | Manual project-context tool only. |
 | R2 | MCP and native integrations. | Directory placeholders only. |
-| R3 | Comprehensive optimization in phases: project context first, then conversations and prompts. | Basic whole-file project-context selection. |
+| R3 | Comprehensive optimization in phases: project context first, then conversations and prompts. | Whole-file selection with optional task-keyword ranking. |
 
 ## Constraints
 
@@ -40,6 +40,13 @@
 - Include help, version information, update and uninstall instructions.
 - Verify a built wheel in a clean environment outside the checkout.
 - Keep installation separate from assistant integration.
+
+## Milestone 4
+
+Task-based selection is implemented as Milestone 4: local path/content keyword
+matching, ranking evidence in JSON, fallback to the default order, and tests for
+ranking, budget limits, exclusions, and installed-command behavior. It adds no
+runtime packages or automatic assistant integration.
 
 ## Open decisions
 

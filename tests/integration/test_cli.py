@@ -54,6 +54,7 @@ class CliTests(unittest.TestCase):
         for arguments in (
             ("context", "missing"), ("context", "README.md"),
             ("context", ".", "--budget", "0"), ("context", ".", "--budget", "nope"),
+            ("context", ".", "--task", ""), ("context", ".", "--task", "   "),
         ):
             with self.subTest(arguments=arguments):
                 run = self.run_cli(*arguments)
@@ -88,6 +89,39 @@ class CliTests(unittest.TestCase):
                 self.assertEqual(result["warnings"], [])
         after = {path.relative_to(self.root): path.read_bytes() for path in self.root.rglob("*") if path.is_file()}
         self.assertEqual(after, before)
+
+    def test_task_prioritizes_matching_source_and_reports_evidence(self):
+        (self.root / "src").mkdir()
+        (self.root / "src/login.py").write_text("def login(name):\n    return name.strip()\n", encoding="utf-8")
+        (self.root / "private_login.py").write_text("login\n", encoding="utf-8")
+        run = self.run_cli("context", ".", "--task", "fix the LOGIN bug", "--budget", "20", "--exclude", "private*", "--format", "json")
+        self.assertEqual(run.returncode, 0, run.stderr)
+        result = json.loads(run.stdout)
+        self.assertEqual(result["files_included"], ["src/login.py"])
+        self.assertEqual(result["task_selection"]["keywords"], ["login"])
+        first = result["task_selection"]["ranking"][0]
+        self.assertEqual(first["path"], "src/login.py")
+        self.assertEqual(first["path_matches"], ["login"])
+        self.assertLessEqual(result["estimated_tokens_after"], 20)
+        self.assertNotIn("private_login.py", [rank["path"] for rank in result["task_selection"]["ranking"]])
+
+    def test_task_fallback_warning_stays_out_of_text_context(self):
+        run = self.run_cli("context", ".", "--task", "login", "--budget", "30")
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.assertIn("No scanned files match", run.stderr)
+        self.assertNotIn("No scanned files match", run.stdout)
+
+    @unittest.skipUnless(shutil.which("git"), "Git is not installed")
+    def test_task_does_not_reintroduce_git_ignored_files(self):
+        subprocess.run(["git", "init", "--quiet", str(self.root)], capture_output=True, check=True)
+        (self.root / ".gitignore").write_text("login.py\n", encoding="utf-8")
+        (self.root / "login.py").write_text("login\n", encoding="utf-8")
+        run = self.run_cli("context", ".", "--task", "login", "--format", "json")
+        self.assertEqual(run.returncode, 0, run.stderr)
+        result = json.loads(run.stdout)
+        self.assertNotIn("login.py", result["files_included"])
+        self.assertNotIn("login.py", [rank["path"] for rank in result["task_selection"]["ranking"]])
+        self.assertIn({"path": "login.py", "reason": "ignored by Git"}, result["files_skipped"])
 
 
 if __name__ == "__main__":
