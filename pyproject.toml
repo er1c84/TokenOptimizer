@@ -12,8 +12,12 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = []
 
+[project.optional-dependencies]
+mcp = ["mcp>=2,<3"]
+
 [project.scripts]
 tokenoptimizer = "tokenoptimizer.cli:main"
+tokenoptimizer-mcp = "tokenoptimizer.integrations.mcp.server:main"
 
 [project.urls]
 Repository = "https://github.com/er1c84/TokenOptimizer"
@@ -28,6 +32,8 @@ packages = [
     "tokenoptimizer.core.optimizer",
     "tokenoptimizer.core.scanner",
     "tokenoptimizer.core.tokenizer",
+    "tokenoptimizer.integrations",
+    "tokenoptimizer.integrations.mcp",
 ]
 include-package-data = false
 

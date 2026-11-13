@@ -75,6 +75,34 @@ python -m tokenoptimizer context . --task "fix the login bug" --budget 4000
 Use `tokenoptimizer context --help` for command help and `tokenoptimizer --version`
 to check the installed version.
 
+## MCP server
+
+Install the optional MCP support from the repository folder:
+
+```powershell
+python -m pip install ".[mcp]"
+```
+
+On Windows, use a standard Python installation from [python.org](https://www.python.org/downloads/windows/).
+The MCP SDK's Windows dependencies do not support MSYS2/MinGW Python.
+
+Launch the server for a project:
+
+```powershell
+tokenoptimizer-mcp --project "C:/Projects/MyApp"
+```
+
+You can also launch it with `python -m tokenoptimizer.integrations.mcp.server`.
+The server uses stdio: an MCP client starts it and sends requests through its
+input and output streams. Starting it in a terminal leaves it waiting for a
+client; press Ctrl+C to stop it.
+
+The read-only `get_project_context` tool accepts `task` and an optional `budget`
+(default: 4000). It returns selected context, estimated tokens, file counts, and
+warnings. Requests use the folder configured with `--project`, which defaults
+to the server's starting folder. The client connection is configured separately.
+The base CLI installation does not require the MCP SDK.
+
 ## License
 
 [MIT](LICENSE).

@@ -5,13 +5,13 @@
 | ID | Approved requirement | Current status |
 | --- | --- | --- |
 | R1 | Hybrid optimization: automatic and manual workflows. | Manual project-context tool only. |
-| R2 | MCP and native integrations. | Directory placeholders only. |
+| R2 | MCP and native integrations. | Local read-only MCP server; native assistant setup remains separate. |
 | R3 | Comprehensive optimization in phases: project context first, then conversations and prompts. | Whole-file selection with optional task-keyword ranking. |
 
 ## Constraints
 
 - Keep processing local and offline-first. No cloud infrastructure.
-- Keep runtime dependencies small. The current code uses only the Python standard library; setuptools is used for packaging.
+- Keep base runtime dependencies small. The CLI uses the standard library; MCP support is an optional SDK dependency. Setuptools is used for packaging.
 - Preserve the original README description and MIT license.
 - Keep integrations separate from the core.
 - Package the current Python version without committing to a long-term production language or build system.
@@ -46,6 +46,13 @@ Task-based selection is implemented as Milestone 4: local path/content keyword
 matching, ranking evidence in JSON, fallback to the default order, and tests for
 ranking, budget limits, exclusions, and installed-command behavior. It adds no
 runtime packages or automatic assistant integration.
+
+## MCP server
+
+The MCP server exposes the existing context builder over stdio, fixes a project
+root at startup, returns compact read-only results, and leaves assistant settings
+unchanged. It has protocol and packaging checks. Windows MCP installations use
+standard Windows Python rather than MSYS2/MinGW.
 
 ## Open decisions
 
