@@ -14,7 +14,6 @@
 - Keep runtime dependencies small. The current code uses only the Python standard library; setuptools is used for packaging.
 - Preserve the original README description and MIT license.
 - Keep integrations separate from the core.
-- Adapt design ideas from RTK without copying its code.
 - Package the current Python version without committing to a long-term production language or build system.
 
 ## Milestone 1
