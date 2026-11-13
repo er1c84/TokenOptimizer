@@ -1,7 +1,8 @@
 # Architecture
 
-The prototype uses Python 3.12+ and the standard library. The production language,
-build system, and packaging are still undecided.
+The current version uses Python 3.12+ and the standard library. It installs with
+pip and builds with setuptools. The long-term production language and tooling
+remain open.
 
 ## Layout
 
@@ -28,7 +29,7 @@ Empty directories contain `.gitkeep` so Git can track them.
 
 ## How it runs
 
-1. `tokenoptimizer.py` calls the CLI.
+1. The installed `tokenoptimizer` command, `python -m tokenoptimizer`, or the checkout's `tokenoptimizer.py` calls the CLI.
 2. The CLI validates arguments and supplies settings to the scanner.
 3. The scanner applies Git ignore rules and its own filters, then returns file contents, skip reasons, and any warnings.
 4. The selector orders files and includes each whole file that fits the budget.
@@ -40,6 +41,21 @@ is skipped; smaller files later in the list can still be included.
 
 Core modules do not import the CLI or assistant integrations. Future adapters
 should call the same core functions.
+
+## Installation
+
+`pyproject.toml` defines the package, Python requirement, version source, and
+command entry point. Setuptools maps `src/` to the installed `tokenoptimizer`
+package. Relative imports let the same code run from a checkout or an installed
+wheel without moving the source folders.
+
+Setuptools is a build dependency only. There are no third-party runtime
+dependencies. The wheel includes the MIT license and active Python modules;
+tests and placeholder directories are not installed.
+
+`tests/check_install.py` installs a wheel in a fresh temporary environment and
+checks the command, module entry point, scanning from another folder, and
+uninstalling. Installation does not configure an assistant integration.
 
 ## Git ignore rules
 

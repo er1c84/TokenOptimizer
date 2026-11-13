@@ -7,12 +7,38 @@ The first version is a manual tool for preparing project context. It reads local
 files, selects whole files within an estimated token budget, and reports what
 was included or skipped. It leaves the original files alone.
 
-Requires Python 3.12+. No packages to install. The production language and build
-system are still undecided.
+Requires Python 3.12+. There are no third-party runtime packages. Git is needed
+to apply ignore rules.
+
+## Install
+
+From the repository folder:
+
+```console
+python -m pip install .
+```
+
+If Python reports that pip is missing, run `python -m ensurepip --upgrade` first.
+Installing from source may download setuptools to build the package; running the
+tool is offline.
+
+After installation, run this from any project folder:
+
+```console
+tokenoptimizer context . --budget 4000
+```
+
+If the short command is not on your PATH, use
+`python -m tokenoptimizer context . --budget 4000` with the same Python used to
+install it.
+
+Check the installed version with `tokenoptimizer --version`. To install local
+updates, run `python -m pip install --upgrade .` from the repository folder.
+To remove it, run `python -m pip uninstall TokenOptimizer`.
 
 ## Usage
 
-Run from the repository folder:
+Try the sample from the repository folder, without installing:
 
 ```console
 python tokenoptimizer.py context examples/sample_project --budget 100
@@ -20,10 +46,10 @@ python tokenoptimizer.py context examples/sample_project --budget 100
 
 The sample includes the README and source file and leaves out the notes.
 
-Point it at another project:
+Once installed, point it at another project:
 
 ```console
-python tokenoptimizer.py context "C:/Projects/MyApp" --budget 4000
+tokenoptimizer context "C:/Projects/MyApp" --budget 4000
 ```
 
 Options:
@@ -47,7 +73,7 @@ For example, if `.gitignore` contains `logs/`, an untracked `logs/` folder is
 listed in the JSON `files_skipped` report with the reason `ignored by Git`:
 
 ```console
-python tokenoptimizer.py context "C:/Projects/MyApp" --format json
+tokenoptimizer context "C:/Projects/MyApp" --format json
 ```
 
 Outside a Git repository, or if Git is missing or fails, the scanner uses its
@@ -71,6 +97,16 @@ python -m unittest discover -s tests -v
 ```
 
 Tested on Windows with Python 3.12. Other platforms still need testing.
+
+To build and check an installable wheel:
+
+```console
+python -m pip wheel --no-deps --wheel-dir dist .
+python tests/check_install.py dist/tokenoptimizer-0.1.0a1-py3-none-any.whl
+```
+
+The install check creates a temporary environment, installs the wheel without
+network access, runs it outside the checkout, and checks uninstalling it.
 
 ## Layout
 

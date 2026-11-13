@@ -3,8 +3,8 @@
 from dataclasses import asdict, dataclass
 from pathlib import PurePosixPath
 
-from src.core.context import Omission, ProjectFile, ScanResult, render_context
-from src.core.tokenizer import ESTIMATOR, estimate_tokens
+from ..context import Omission, ProjectFile, ScanResult, render_context
+from ..tokenizer import ESTIMATOR, estimate_tokens
 
 
 @dataclass(frozen=True)

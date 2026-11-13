@@ -28,6 +28,19 @@ filters and `--exclude` behavior.
 Uses Git's file listing without adding packages. The existing scanner and budget
 tests still apply.
 
+## Milestone 3: Installable command
+
+Complete for the current Python version.
+
+- Install from a checkout with `python -m pip install .`.
+- Run `tokenoptimizer` from any project folder, or use `python -m tokenoptimizer`.
+- Check the version with `--version`.
+- Keep the original checkout command working.
+- Build a wheel and check installation, scanning, and uninstalling in a clean environment.
+
+This uses setuptools for packaging and adds no runtime dependencies. It does not
+install assistant hooks or enable automatic optimization.
+
 ## Later improvements
 
 Take these one at a time; the order can change:
@@ -39,5 +52,5 @@ Take these one at a time; the order can change:
 - Add native Codex and Claude Code adapters and an MCP server.
 - Add automatic workflows, then conversation and prompt optimization.
 
-The production language and build system remain undecided. Resolve those before
-production packaging or a larger rewrite.
+The current Python version has pip/setuptools packaging. The production language,
+long-term tooling, and standalone installers remain open decisions.

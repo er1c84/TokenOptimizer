@@ -11,11 +11,11 @@
 ## Constraints
 
 - Keep processing local and offline-first. No cloud infrastructure.
-- Keep dependencies small. The prototype uses only the Python standard library.
+- Keep runtime dependencies small. The current code uses only the Python standard library; setuptools is used for packaging.
 - Preserve the original README description and MIT license.
 - Keep integrations separate from the core.
 - Adapt design ideas from RTK without copying its code.
-- Treat Python as the prototype language; the production language and build system remain open.
+- Package the current Python version without committing to a long-term production language or build system.
 
 ## Milestone 1
 
@@ -33,9 +33,17 @@
 - Report ignored paths and warn when Git ignore rules cannot be applied.
 - Test ignore behavior, fallback behavior, and read-only scanning.
 
+## Milestone 3
+
+- Install the current version with pip and provide a `tokenoptimizer` command.
+- Support `python -m tokenoptimizer` and keep the checkout launcher working.
+- Include help, version information, update and uninstall instructions.
+- Verify a built wheel in a clean environment outside the checkout.
+- Keep installation separate from assistant integration.
+
 ## Open decisions
 
-- Production language, build system, packaging, and supported platforms.
+- Production language, long-term build tooling, standalone distribution, and supported platforms.
 - Native integration methods, MCP capabilities, and transport.
 - Automatic triggers, task relevance, and file-selection policies.
 - Model tokenizers and accuracy expectations.

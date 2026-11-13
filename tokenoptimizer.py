@@ -1,4 +1,4 @@
-"""Run the local prototype without installing a package."""
+"""Run TokenOptimizer from a checkout."""
 
 from src.cli import main
 

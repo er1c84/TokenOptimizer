@@ -14,9 +14,12 @@ desktop.ini
 *.swp
 *.swo
 
-# Python prototype artifacts
+# Python artifacts
 __pycache__/
 *.py[cod]
 .venv/
+build/
+dist/
+*.egg-info/
 
 # Keep dependency lockfiles and shared editor configuration eligible for tracking.

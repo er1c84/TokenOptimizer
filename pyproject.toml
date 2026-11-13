@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "TokenOptimizer"
+dynamic = ["version"]
+description = "Prepare local project context within an estimated token budget."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = []
+
+[project.scripts]
+tokenoptimizer = "tokenoptimizer.cli:main"
+
+[project.urls]
+Repository = "https://github.com/er1c84/TokenOptimizer"
+
+[tool.setuptools]
+packages = [
+    "tokenoptimizer",
+    "tokenoptimizer.cli",
+    "tokenoptimizer.config",
+    "tokenoptimizer.core",
+    "tokenoptimizer.core.context",
+    "tokenoptimizer.core.optimizer",
+    "tokenoptimizer.core.scanner",
+    "tokenoptimizer.core.tokenizer",
+]
+include-package-data = false
+
+[tool.setuptools.package-dir]
+tokenoptimizer = "src"
+
+[tool.setuptools.dynamic]
+version = {attr = "tokenoptimizer.__version__"}

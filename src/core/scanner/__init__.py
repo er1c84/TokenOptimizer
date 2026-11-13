@@ -4,9 +4,9 @@ from fnmatch import fnmatchcase
 import os
 from pathlib import Path
 
-from src.config import Settings
-from src.core.context import Omission, ProjectFile, ScanResult
-from src.core.scanner.gitignore import load_git_ignores
+from ...config import Settings
+from ..context import Omission, ProjectFile, ScanResult
+from .gitignore import load_git_ignores
 
 GENERATED_DIRECTORIES = frozenset({
     "node_modules", "target", "dist", "build", "__pycache__", "venv",

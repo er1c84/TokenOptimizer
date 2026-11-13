@@ -1,13 +1,14 @@
-"""Manual local workflow; no assistant hooks are installed by this prototype."""
+"""Command-line interface."""
 
 import argparse
 import json
 from pathlib import Path
 import sys
 
-from src.config import Settings
-from src.core.optimizer import select_context
-from src.core.scanner import scan_project
+from .. import __version__
+from ..config import Settings
+from ..core.optimizer import select_context
+from ..core.scanner import scan_project
 
 
 def _positive_integer(value: str) -> int:
@@ -18,7 +19,8 @@ def _positive_integer(value: str) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Create a local project-context draft.")
+    parser = argparse.ArgumentParser(prog="tokenoptimizer", description="Prepare local project context.")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(dest="command", required=True)
     context = commands.add_parser("context", help="select whole UTF-8 files within an estimated budget")
     context.add_argument("path", nargs="?", type=Path, default=Path("."))
