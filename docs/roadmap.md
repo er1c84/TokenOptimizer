@@ -56,14 +56,28 @@ evaluation on real coding tasks before automatic Codex integration.
 
 ## Milestone 5: Local MCP server
 
-Implemented on the integration branch.
+Complete.
 
 - Reuse the project context builder through `get_project_context`.
 - Fix a project root at startup and return compact read-only results.
 - Add optional SDK dependencies and an installed stdio server command.
 - Test discovery, calls, validation, ignored files, and installed subprocesses.
 
-Connecting the server to Codex and measuring end-to-end usage are separate steps.
+## Milestone 6: Codex connection
+
+Complete for the local MCP workflow.
+
+- Register the MCP server in shared Codex settings, with a project-specific root override.
+- Wait for the server during startup so its tool is available before work begins.
+- Keep computer-specific paths out of Git.
+- Add short repository instructions for context requests during exploration.
+- Document setup, verification, and disconnecting.
+- Verify discovery and a context request through Codex in an in-memory session.
+
+The connection check uses saved settings and calls the tool through Codex without
+starting a model turn. A fresh Codex desktop chat has also successfully called
+the exposed `get_project_context` tool directly. Real coding tasks and end-to-end
+token usage still need evaluation.
 
 ## Later improvements
 
@@ -73,7 +87,7 @@ Take these one at a time; the order can change:
 - Add model-specific token counting.
 - Improve task relevance using results from real coding tasks.
 - Cache repeated work locally.
-- Connect the MCP server to Codex; add native assistant adapters as needed.
+- Measure the Codex workflow on real tasks; add other assistant adapters as needed.
 - Add automatic workflows, then conversation and prompt optimization.
 
 The current Python version has pip/setuptools packaging. The production language,

@@ -103,6 +103,12 @@ warnings. Requests use the folder configured with `--project`, which defaults
 to the server's starting folder. The client connection is configured separately.
 The base CLI installation does not require the MCP SDK.
 
+## Codex
+
+Follow the [Codex setup guide](docs/codex.md) to connect the MCP server to a project.
+This repository's `AGENTS.md` asks Codex to use it when exploring unfamiliar code.
+Codex can still read additional files as needed.
+
 ## License
 
 [MIT](LICENSE).
