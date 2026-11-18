@@ -19,6 +19,7 @@ __pycache__/
 *.py[cod]
 .venv/
 .mcp-runtime/
+/.codex/config.toml
 build/
 dist/
 *.egg-info/
